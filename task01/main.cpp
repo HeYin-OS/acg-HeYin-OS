@@ -65,6 +65,11 @@ void draw_polygon(
         float p1x = polygon_xy[i1_vtx * 2 + 0] - x;
         float p1y = polygon_xy[i1_vtx * 2 + 1] - y;
         // write a few lines of code to compute winding number (hint: use atan2)
+        static const double pi = 3.14159265358979323846264338327950288;
+        double magnitude_product = sqrt(pow(p0x,2.0) + pow(p0y,2.0)) * sqrt(pow(p1x,2.0) + pow(p1y,2.0)); //magnitude product of p0 and p1
+        double cosine_value = (p0x * p1x + p0y * p1y) / magnitude_product; //calculate the cosine value of the angle
+        double sine_value = (p0x * p1y - p0y * p1x) / magnitude_product; //calculate the sine value of the angle
+        winding_number += static_cast<float>(-atan2(sine_value,cosine_value) / (2 * pi)); //added into sum of winding number
       }
       const int int_winding_number = int(std::round(winding_number));
       if (int_winding_number == 1 ) { // if (x,y) is inside the polygon
@@ -91,6 +96,59 @@ void dda_line(
   auto dx = x1 - x0;
   auto dy = y1 - y0;
   // write some code below to paint pixel on the line with color `brightness`
+  float slope;
+  int end_x = static_cast<int>(x1);
+  int end_y = static_cast<int>(y1);
+  if (dx == 0){//strictly vertical line
+      int pix_x = static_cast<int>(x0);
+      int pix_y = static_cast<int>(y0);
+      if(y1 > y0){
+          do {
+              img_data[width * pix_y + pix_x] = brightness;
+              ++pix_y;
+          } while (pix_y <= end_y);
+      } else {
+          do {
+              img_data[width * pix_y + pix_x] = brightness;
+              --pix_y;
+          } while (pix_y >= end_y);
+      }
+      return;
+  } else {
+      slope = dy / dx; //slope of the line
+  }
+  //normal circumstances
+  if (abs(slope) <= 1.0) { //choose the direction
+      int ix = static_cast<int>(x0), i=0;
+      if(x1 > x0){
+          do {
+              int pix_x = ix + i, pix_y = static_cast<int>(y0 + static_cast<float>(i) * slope);
+              img_data[width * pix_y + pix_x] = brightness;
+              ++i;
+          } while (ix + i <= end_x);
+      } else {
+          do {
+              int pix_x = ix - i, pix_y = static_cast<int>(y0 - static_cast<float>(i) * slope);
+              img_data[width * pix_y + pix_x] = brightness;
+              ++i;
+          } while (ix - i >= end_x);
+      }
+  } else {
+      int iy = static_cast<int>(y0), i=0;
+      if(y1 > y0){
+          do {
+              int pix_y = iy + i, pix_x = static_cast<int>(x0 + static_cast<float>(i) / slope);
+              img_data[width * pix_y + pix_x] = brightness;
+              ++i;
+          } while (iy + i <= end_y);
+      } else {
+          do {
+              int pix_y = iy - i, pix_x = static_cast<int>(x0 - static_cast<float>(i) / slope);
+              img_data[width * pix_y + pix_x] = brightness;
+              ++i;
+          } while (iy - i >= end_y);
+      }
+  }
 }
 
 int main() {

@@ -64,9 +64,39 @@ int number_of_intersection_ray_against_quadratic_bezier(
     const Eigen::Vector2f &ps,
     const Eigen::Vector2f &pc,
     const Eigen::Vector2f &pe) {
-  // comment out below to do the assignment
-  return number_of_intersection_ray_against_edge(org, dir, ps, pe);
-  // write some code below to find the intersection between ray and the quadratic
+    // comment out below to do the assignment
+    //if (((pc.x() == ps.x()) && (pc.x() == pe.x())) || ((pc.y() == ps.y()) && (pc.y() == pe.y())))
+     //   return number_of_intersection_ray_against_edge(org, dir, ps, pe);
+    // write some code below to find the intersection between ray and the quadratic
+    auto w = Eigen::Vector2f(-dir.y(), dir.x());
+    // a,b,c of quadratic equation in two variables (the coefficients have already been combined on my scratch paper)
+    auto a = (pe.x() - 2 * pc.x() + ps.x()) * w.x() + (pe.y() - 2 * pc.y() + ps.y()) * w.y();
+    auto b = 2 * ((pc.x() - ps.x()) * w.x() + (pc.y() - ps.y()) * w.y());
+    auto c = (ps.x() - org.x()) * w.x() + (ps.y() - org.y()) * w.y();
+    // solve quadratic equation in two variables
+    auto delta = pow(b, 2) - 4 * a * c;
+    //no real root
+    if (delta < 0.f) return 0;
+    auto sqrt_of_delta = sqrt(delta);
+    //get t1 and t2
+    auto t1 = (-b + sqrt_of_delta) / 2 / a;
+    auto t2 = (-b - sqrt_of_delta) / 2 / a;
+    if ((t1 < 0.f || t1 > 1.f) && (t2 < 0.f || t2 > 1.f)) return 0;
+    auto p_x_1 = pow(1 - t1, 2) * ps.x() + 2 * (1 - t1) * t1 * pc.x() + pow(t1, 2) * pe.x();
+    auto p_x_2 = pow(1 - t2, 2) * ps.x() + 2 * (1 - t2) * t2 * pc.x() + pow(t2, 2) * pe.x();
+    auto div_1_x = (p_x_1 - org.x()) / dir.x();
+    auto div_2_x = (p_x_2 - org.x()) / dir.x();
+    if ((t1 > 0.f && t1 < 1.f) && (t2 < 0.f || t2 > 1.f)) {
+        if (div_1_x > 0) return 1;
+        else return 0;
+    } else if ((t1 < 0.f || t1 > 1.f) && (t2 > 0.f && t2 < 1.f)) {
+        if (div_2_x > 0) return 1;
+        else return 0;
+    } else {
+        if (div_1_x > 0 && div_2_x > 0) return 2;
+        else if (div_1_x > 0 || div_2_x > 0) return 1;
+        else return 0;
+    }
 }
 
 int main() {

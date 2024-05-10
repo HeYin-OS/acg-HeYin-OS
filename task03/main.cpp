@@ -67,9 +67,11 @@ void draw_3d_triangle_with_texture(
       // `bc` gives the barycentric coordinate **on the screen** and it is distorted.
       // Compute the barycentric coordinate ***on the 3d triangle** below that gives the correct texture mapping.
       // (Hint: formulate a linear system with 4x4 coefficient matrix and solve it to get the barycentric coordinate)
-      Eigen::Matrix4f coeff;
-      Eigen::Vector4f rhs;
-
+      Eigen::Matrix4f coeff = Eigen::Matrix4f::Zero();
+      coeff.diagonal() = Eigen::Vector4f(1.f / q0.w(), 1.f / q1.w(), 1.f / q2.w(), 1.f);
+      Eigen::Vector4f bc_new = coeff * bc.homogeneous();
+      auto sum_3d = bc_new[0] + bc_new[1] + bc_new[2];
+      bc = Eigen::Vector3f(bc_new[0], bc_new[1], bc_new[2]) / sum_3d;
       // do not change below
       auto uv = uv0 * bc[0] + uv1 * bc[1] + uv2 * bc[2]; // uv coordinate of the pixel
       // compute pixel coordinate of the texture

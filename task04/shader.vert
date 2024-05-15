@@ -32,7 +32,7 @@ void main()
         z0 /= 3.0;
         // After the refection, the range of z-coordinate will be not longer than 4.
         // The extreme situation is [-3,1] if the mirror is z=-1 and [-1,3] if the mirror is z=1.
-        // So the scale number should be 3 to cover the extreme situation.
+        // So the scale number should be 3 to cover the extreme situation of the range of z.
         //x0 = ??? influenced by reflection
         //y0 = ??? no change of this
         //z0 = ??? influenced by reflection

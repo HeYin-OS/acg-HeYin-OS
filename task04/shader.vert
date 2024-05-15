@@ -24,9 +24,18 @@ void main()
         // make sure the occlusion is correctly computed.
         // the mirror is behind the armadillo, so the reflected image should be behind the armadillo.
         // furthermore, make sure the occlusion is correctly computed for the reflected image.
-        //x0 = ???
-        //y0 = ???
-        //z0 = ???
+        vec3 p0_to_org = vec3(x0 - org.x, 0.0, z0 - org.z); // actually ignore the y-coordinate since there's no change done to height
+        float d = dot(p0_to_org, nrm); // projection on the normal vector of mirror
+        x0 -= 2.0 * d * nrm.x;
+        z0 -= 2.0 * d * nrm.z;
+        // process of z (Compression)
+        z0 /= 3.0;
+        // After the refection, the range of z-coordinate will be not longer than 4.
+        // The extreme situation is [-3,1] if the mirror is z=-1 and [-1,3] if the mirror is z=1.
+        // So the scale number should be 3 to cover the extreme situation.
+        //x0 = ??? influenced by reflection
+        //y0 = ??? no change of this
+        //z0 = ??? influenced by reflection
     }
     // do not edit below
 

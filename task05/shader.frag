@@ -4,7 +4,7 @@
 // https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.1.20.pdf
 
 // signed distance function of a cylinder the axis is aligned to z-direction
-// code from: https://iquilezles.org/articles/distfunctions/
+// code from: https://iquil ezles.org/articles/distfunctions/
 float sdCappedCylinder( vec3 p, float h, float r )
 {
   vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(r,h);
@@ -37,6 +37,14 @@ float SDF(vec3 pos)
 {
   float d0 = sdCappedCylinder(pos, len_cylinder, rad_cylinder);
   // write some code to combine the signed distance fields above to design the object described in the README.md
+  float d1 = sdCappedCylinder(vec3(-pos.y,pos.x,pos.z), len_cylinder, rad_cylinder); //cylinder1
+  float d2 = sdCappedCylinder(vec3(pos.x,-pos.z,pos.y), len_cylinder, rad_cylinder); //cylinder2
+  d1 = min(d1, d2); // union of cylinder1 and cylinder2
+  d0 = min(d0, d1); // union of cylinder0 and the result above
+  float d3 = sdSphere(pos, rad_sphere); // ball
+  float d4 = sdBox(pos, vec3(box_size, box_size, box_size));// cube
+  d3 = max(d3, d4); // intersection of ball of cube
+  d0 = max(-d0, d3); // final 3d-object
   return d0; // comment out and define new distance
 }
 
@@ -44,6 +52,10 @@ float SDF(vec3 pos)
 vec3 SDF_color(vec3 pos)
 {
   // write some code below to return color (RGB from 0 to 1) to paint the object describe in README.md
+  float temp = SDF(pos); // calculate dist
+  if(temp == sdSphere(pos, rad_sphere)) return vec3(0., 0., 1.); // compare it with dist of ball's surface
+  else if(temp == sdBox(pos, vec3(box_size, box_size, box_size))) return vec3(1., 0., 0.); // compare it with dist of cube's surface
+  else // it is surface of 3-cylinder
   return vec3(0., 1., 0.); // comment out and define new color
 }
 

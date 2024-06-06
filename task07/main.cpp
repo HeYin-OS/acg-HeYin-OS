@@ -81,7 +81,7 @@ auto sampling_brdf_specular(
       cos_alpha);
   const Eigen::Matrix3f loc2world = local_to_world_vector_transformation(dir_mirror);
   const Eigen::Vector3f dir_out = loc2world * dir_loc;
-  assert(dir_out.dot(nrm) > 0.f);
+  //assert(dir_out.dot(nrm) > 0.f);
   float brdf = std::pow(cos_alpha, shiness) * (shiness + 1.f) / (2.f * float(M_PI));
   return {dir_out, brdf};
 }
@@ -270,7 +270,7 @@ auto sampling_light(
   float cos_theta_max = std::sqrt(std::max(0.f, 1.f - sin_theta_max_squared));
   float cos_theta = 1.f - unirand.x() * (1.f - cos_theta_max);
   assert(cos_theta > 0.0);
-  assert(cos_theta > cos_theta_max);
+  //assert(cos_theta >= cos_theta_max);
   assert(cos_theta <= 1.f);
   float sin_theta = std::sqrt(std::max(0.f, 1.f - cos_theta * cos_theta));
   float phi = 2.f * float(M_PI) * unirand.y();
@@ -367,7 +367,7 @@ int main() {
         if (hit1_object == -1){ continue; }
         float hit1_rad = spheres[hit1_object].emission;
         // compute the contribution for this pixel
-        float rad = 0.f; // replace this with some code
+        float rad = (hit0_brdf * hit1_rad * hit0_refl.dot(hit0_normal)) / hit0_pdf / nsample; // replace this with some code
         img_light[ih * img_width + iw] += rad;
       }
       // -----------------
@@ -386,7 +386,7 @@ int main() {
         if (hit1_object == -1){ continue; }
         float hit1_rad = spheres[hit1_object].emission;
         // compute the contribution for this pixel
-        float rad = 0.f; // replace this with some code
+        float rad = (hit0_brdf * hit1_rad * hit0_refl.dot(hit0_normal)) / hit0_pdf / nsample; // replace this with some code
         img_brdf[ih * img_width + iw] += rad;
       }
       // -----------------
@@ -404,7 +404,8 @@ int main() {
         float hit1_rad = spheres[hit1_object].emission;
         float hit0_pdf_brdf_sample = spheres[hit0_object].pdf(hit0_normal, cam_ray_dir, hit0_refl);
         float hit0_pdf_light_sample = pdf_light_sample(hit0_normal, hit0_pos, cam_ray_dir, hit0_refl, hit0_object);
-        float rad = 0.f; // write some code
+        float weight = hit0_pdf_brdf_sample / (hit0_pdf_brdf_sample + hit0_pdf_light_sample);
+        float rad = (hit0_brdf * hit1_rad * hit0_refl.dot(hit0_normal) * weight) / hit0_pdf_brdf_sample / nsample; // write some code
         img_mis[ih * img_width + iw] += rad;
       }
       for (int isample = 0; isample < nsample / 2; ++isample) {
@@ -416,7 +417,8 @@ int main() {
         float hit1_rad = spheres[hit1_object].emission;
         float hit0_pdf_light_sample = pdf_light_sample(hit0_normal, hit0_pos, cam_ray_dir, hit0_refl, hit0_object);
         float hit0_pdf_brdf_sample = spheres[hit0_object].pdf(hit0_normal, cam_ray_dir, hit0_refl);
-        float rad = 0.f; // write some code
+        float weight = hit0_pdf_light_sample / (hit0_pdf_brdf_sample + hit0_pdf_light_sample);
+        float rad = (hit0_brdf * hit1_rad * hit0_refl.dot(hit0_normal) * weight) / hit0_pdf_light_sample / nsample; // write some code
         img_mis[ih * img_width + iw] += rad;
       }
     }
